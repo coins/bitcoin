@@ -152,6 +152,16 @@ static bool RPCAuthorized(const std::string& strAuth, std::string& strAuthUserna
 
 static bool HTTPReq_JSONRPC(const util::Ref& context, HTTPRequest* req)
 {
+    // Send CORS header for browsers to accept our response
+    req->WriteHeader("Access-Control-Allow-Origin", "*");
+
+    // Handle CORS preflight request for "Authorization" header
+    if (req->GetRequestMethod() == HTTPRequest::OPTIONS) {
+        req->WriteHeader("Access-Control-Allow-Headers", "Authorization");
+        req->WriteReply(HTTP_OK);
+        return true;
+    }
+
     // JSONRPC handles only POST
     if (req->GetRequestMethod() != HTTPRequest::POST) {
         req->WriteReply(HTTP_BAD_METHOD, "JSONRPC server handles only POST requests");
